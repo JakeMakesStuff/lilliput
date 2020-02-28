@@ -302,8 +302,8 @@ func newOpenCVDecoder(buf []byte) (*openCVDecoder, error) {
 	}, nil
 }
 
-// NewRGBADecoder is used to create a decoder of a image.RGBA object.
-func NewRGBADecoder(img *image.RGBA) (Decoder, error) {
+// NewRGBAFramebuffer is used to create a frame buffer of a image.RGBA object.
+func NewRGBAFramebuffer(img *image.RGBA) *Framebuffer {
 	bounds := img.Bounds()
 	s := bounds.Size()
 	buf := make([]byte, 0, s.X*s.Y)
@@ -316,23 +316,15 @@ func NewRGBADecoder(img *image.RGBA) (Decoder, error) {
 		}
 	}
 
-	mat := C.opencv_mat_create_from_data(C.int(len(buf)), 1, C.CV_8UC3, unsafe.Pointer(&buf[0]), C.size_t(len(buf)))
+	mat := C.opencv_mat_create_from_data(C.int(s.X), C.int(s.Y), C.CV_8UC3, unsafe.Pointer(&buf[0]), C.size_t(len(buf)))
 
-	if mat == nil {
-		return nil, ErrBufTooSmall
-	}
-
-	decoder := C.opencv_decoder_create(mat)
-	if decoder == nil {
-		C.opencv_mat_release(mat)
-		return nil, ErrInvalidImage
-	}
-
-	return &openCVDecoder{
+	return &Framebuffer{
 		mat:     mat,
-		decoder: decoder,
+		pixelType: C.CV_8UC3,
+		height: s.Y,
+		width: s.X,
 		buf:     buf,
-	}, nil
+	}
 }
 
 // detectAPNG detects if a blob contains a PNG with animated segments

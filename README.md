@@ -44,11 +44,6 @@ This will return an error when the magic bytes of the buffer don't match
 one of the supported image types.
 
 ```go
-func NewRGBADecoder(img *image.RGBA) (Decoder, error)
-```
-This is used to create a decoder of a image.RGBA object.
-
-```go
 func (d lilliput.Decoder) Header() (lilliput.ImageHeader, error)
 ```
 Read and return the image's header. The header contains the image's metadata.
@@ -178,6 +173,11 @@ Returns the number of channels per pixel, e.g. 3 for RGB or 4 for RGBA.
 This type contains a raw array of pixels, decompressed from an image.
 In general, you will want to use the ImageOps object instead of operating on
 Framebuffers manually.
+
+```go
+func NewRGBAFramebuffer(img *image.RGBA) *Framebuffer
+```
+This is used to create a frame buffer from a image.RGBA object.
 
 ```go
 func lilliput.NewFramebuffer(width, height int) *lilliput.Framebuffer
