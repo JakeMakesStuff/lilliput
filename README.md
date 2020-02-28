@@ -44,6 +44,11 @@ This will return an error when the magic bytes of the buffer don't match
 one of the supported image types.
 
 ```go
+func NewRGBADecoder(img *image.RGBA) (Decoder, error)
+```
+This is used to create a decoder of a image.RGBA object.
+
+```go
 func (d lilliput.Decoder) Header() (lilliput.ImageHeader, error)
 ```
 Read and return the image's header. The header contains the image's metadata.

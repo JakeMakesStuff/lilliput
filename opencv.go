@@ -15,6 +15,7 @@ import "C"
 import (
 	"bytes"
 	"encoding/binary"
+	"image"
 	"io"
 	"time"
 	"unsafe"
@@ -284,6 +285,39 @@ func newOpenCVDecoder(buf []byte) (*openCVDecoder, error) {
 	// this next check is sort of silly since this array is 1-dimensional
 	// but if the create ever changes and we goof up, could catch a
 	// buffer overwrite
+	if mat == nil {
+		return nil, ErrBufTooSmall
+	}
+
+	decoder := C.opencv_decoder_create(mat)
+	if decoder == nil {
+		C.opencv_mat_release(mat)
+		return nil, ErrInvalidImage
+	}
+
+	return &openCVDecoder{
+		mat:     mat,
+		decoder: decoder,
+		buf:     buf,
+	}, nil
+}
+
+// NewRGBADecoder is used to create a decoder of a image.RGBA object.
+func NewRGBADecoder(img *image.RGBA) (Decoder, error) {
+	bounds := img.Bounds()
+	s := bounds.Size()
+	buf := make([]byte, 0, s.X*s.Y)
+	for i := bounds.Min.X; i < bounds.Max.X; i++ {
+		for j := bounds.Min.Y; j < bounds.Max.Y; j++ {
+			r, g, b, _ := img.At(i, j).RGBA()
+			buf = append(buf, byte(r>>8))
+			buf = append(buf, byte(g>>8))
+			buf = append(buf, byte(b>>8))
+		}
+	}
+
+	mat := C.opencv_mat_create_from_data(C.int(len(buf)), 1, C.CV_8UC3, unsafe.Pointer(&buf[0]), C.size_t(len(buf)))
+
 	if mat == nil {
 		return nil, ErrBufTooSmall
 	}
