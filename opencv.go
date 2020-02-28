@@ -305,8 +305,9 @@ func newOpenCVDecoder(buf []byte) (*openCVDecoder, error) {
 // NewRGBAFramebuffer is used to create a frame buffer of a image.RGBA object.
 func NewRGBAFramebuffer(img *image.RGBA) *Framebuffer {
 	bounds := img.Bounds()
-	s := bounds.Size()
-	buf := make([]byte, 0, s.X*s.Y)
+	x := bounds.Dx()
+	y := bounds.Dy()
+	buf := make([]byte, 0, x*y*3)
 	for i := bounds.Min.X; i < bounds.Max.X; i++ {
 		for j := bounds.Min.Y; j < bounds.Max.Y; j++ {
 			r, g, b, _ := img.At(i, j).RGBA()
@@ -316,13 +317,13 @@ func NewRGBAFramebuffer(img *image.RGBA) *Framebuffer {
 		}
 	}
 
-	mat := C.opencv_mat_create_from_data(C.int(s.X), C.int(s.Y), C.CV_8UC3, unsafe.Pointer(&buf[0]), C.size_t(len(buf)))
+	mat := C.opencv_mat_create_from_data(C.int(x), C.int(y), C.CV_8UC3, unsafe.Pointer(&buf[0]), C.size_t(len(buf)))
 
 	return &Framebuffer{
 		mat:     mat,
 		pixelType: C.CV_8UC3,
-		height: s.Y,
-		width: s.X,
+		height: y,
+		width: x,
 		buf:     buf,
 	}
 }
